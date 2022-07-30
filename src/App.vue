@@ -5,8 +5,17 @@
   </header>
 
   <section class="panel">
-    <button v-show="gameState === 0" class="panel__start">Start Game!</button>
-    <h2 v-show="gameState === 1" class="panel__memorise">Memorise the fruits!</h2>
+    <button v-show="gameState === 0" class="panel__start" @click="startGame">
+      Start Game!
+    </button>
+    <div v-show="gameState === 1">
+    <h2 class="panel__memorise">
+      Memorise the fruits!
+    </h2>
+    <h2 v-show="counter != 0" class="panel__memorise">
+      Starting in {{ counter }}!
+    </h2>
+    </div>
     <Tile
       v-show="gameState === 2"
       class="panel__chosen"
@@ -15,7 +24,11 @@
       :name="theChosenOne.name"
       :visible="theChosenOne.visible"
     />
-    <h2 class="panel__result" v-show="gameState === 3" v-text="resultMessage"></h2>
+    <h2
+      class="panel__result"
+      v-show="gameState === 3"
+      v-text="resultMessage"
+    ></h2>
   </section>
 
   <main class="tiles">
@@ -47,14 +60,14 @@ onMounted(() => {
   for (let index = 0; index < 3; index++) {
     selectedFruits.value.push(selectFruit(fruits));
   }
-  startGame();
 });
 
 const theChosenOne = ref({});
 const level = ref(1);
 const counter = ref(0);
-const gameState = ref(0)
+const gameState = ref(0);
 const intervalId = ref("");
+const resultMessage = ref('')
 
 const fruits = ref([
   {
@@ -137,6 +150,26 @@ const startGame = () => {
   setTiles();
   setTheChosenOne();
   startCounter(7);
+  toggleTilesVisibility(5000, 4);
+  gameState.value++;
+};
+
+const toggleTilesVisibility = (time, until) => {
+  startCounter(5);
+  let repeated = 0;
+  const interval = setInterval(() => {
+    tiles.value.forEach(tile => {
+      tile.visible = Math.random() < 0.5;
+    });
+    repeated++;
+    if (repeated == until) {
+      clearInterval(interval);
+      gameState.value++;
+      tiles.value.forEach(tile => {
+        tile.visible = false;
+      });
+    }
+  }, time);
 };
 
 const startCounter = (start) => {
@@ -163,17 +196,16 @@ const levelUp = () => {
 const setTheChosenOne = () => {
   const index = randomNumber(selectedFruits.value.length);
   theChosenOne.value = new Fruit(selectedFruits.value[index]);
+  theChosenOne.value.visible = true;
 };
 
 const setTiles = () => {
   tiles.value = [];
-  console.log(selectedFruits.value);
   for (let index = 0; index < 12; index++) {
     const index = randomNumber(selectedFruits.value.length);
     selectedFruit.value = new Fruit(selectedFruits.value[index]);
     tiles.value.push(selectedFruit.value);
   }
-  console.log(tiles.value);
 };
 
 const searchFruit = (fruits, fruitId) => {
