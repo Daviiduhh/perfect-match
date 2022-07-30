@@ -1,16 +1,59 @@
+<template>
+  <header class="header">
+    <h1 class="header__title">Perfect Match</h1>
+    <h1 class="header__title">Level: {{ level }}</h1>
+  </header>
+
+  <section class="panel">
+    <h2 v-show="gameState === 0" class="panel__memorise">Memorise the fruits!</h2>
+    <Tile
+      v-show="gameState === 1"
+      class="panel__chosen"
+      :icon="theChosenOne.icon"
+      :color="theChosenOne.color"
+      :name="theChosenOne.name"
+      :visible="theChosenOne.visible"
+    />
+    <h2 v-show="gameState === 2" v-text="resultMessage"></h2>
+  </section>
+
+  <main class="tiles">
+    <Tile
+      v-for="tile in tiles"
+      :icon="tile.icon"
+      :color="tile.color"
+      :name="tile.name"
+      :visible="tile.visible"
+    />
+  </main>
+</template>
+
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import Tile from "./components/Tile.vue";
 
 class Fruit {
   constructor(fruit) {
-    this.id = fruit.id;
-    (this.icon = fruit.icon),
+    (this.id = fruit.id),
+      (this.icon = fruit.icon),
       (this.color = fruit.color),
       (this.name = fruit.name),
       (this.visible = fruit.visible);
   }
 }
+
+onMounted(() => {
+  for (let index = 0; index < 3; index++) {
+    selectedFruits.value.push(selectFruit(fruits));
+  }
+  startGame();
+});
+
+const theChosenOne = ref({});
+const level = ref(1);
+const counter = ref(0);
+const gameState = ref(0)
+const intervalId = ref("");
 
 const fruits = ref([
   {
@@ -84,44 +127,87 @@ const fruits = ref([
     name: "Berenjena",
   },
 ]);
+
 const tiles = ref([]);
 const selectedFruit = ref({});
 const selectedFruits = ref([]);
 
+const startGame = () => {
+  setTiles();
+  setTheChosenOne();
+  startCounter(7);
+};
+
+const startCounter = (start) => {
+  counter.value = start;
+  intervalId.value = setInterval(() => {
+    if (counter.value === 0) {
+      clearInterval(intervalId.value);
+    } else {
+      counter.value--;
+    }
+  }, 1000);
+};
+
+const randomNumber = (max) => {
+  return Math.floor(Math.random() * (max - 0) + 0);
+};
+
+const levelUp = () => {
+  level.value++;
+  selectedFruits.value.push(selectFruit(fruits));
+  setTiles();
+};
+
+const setTheChosenOne = () => {
+  const index = randomNumber(selectedFruits.value.length);
+  theChosenOne.value = new Fruit(selectedFruits.value[index]);
+};
+
+const setTiles = () => {
+  tiles.value = [];
+  console.log(selectedFruits.value);
+  for (let index = 0; index < 12; index++) {
+    const index = randomNumber(selectedFruits.value.length);
+    selectedFruit.value = new Fruit(selectedFruits.value[index]);
+    tiles.value.push(selectedFruit.value);
+  }
+  console.log(tiles.value);
+};
+
 const searchFruit = (fruits, fruitId) => {
-  const found = fruits.find(
-    (fruit) => fruit.id == fruitId
-  );
+  const found = fruits.find((fruit) => fruit.id == fruitId);
   return found;
 };
 
-const selectFruit = () => {
-  //Esta funcion solo se puede utilizar 10 veces
+const selectFruit = (array) => {
+  //Esta funcion solo se puede utilizar la longitud del array veces
   do {
-    const index = Math.floor(Math.random() * 10);
-    selectedFruit.value = new Fruit(fruits.value[index]);
+    const index = randomNumber(array.value.length);
+    selectedFruit.value = new Fruit(array.value[index]);
   } while (
     searchFruit(selectedFruits.value, selectedFruit.value.id) != undefined
   );
-  selectedFruits.value.push(selectedFruit.value);
-  console.log(selectedFruits.value);
+
+  return selectedFruit.value;
 };
 </script>
 
-<template>
-  <main class="tiles">
-    <span @click="selectFruit">funcion</span>
-    <Tile
-      v-for="fruit in fruits"
-      :icon="fruit.icon"
-      :color="fruit.color"
-      :name="fruit.name"
-      :visible="fruit.visible"
-    />
-  </main>
-</template>
-
 <style lang="scss" scoped>
+.header {
+  display: flex;
+  justify-content: space-between;
+
+  &__title {
+    filter: drop-shadow(0 0 2em #fff);
+  }
+}
+
+.panel {
+  display: flex;
+  justify-content: center;
+}
+
 .tiles {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
