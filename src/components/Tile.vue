@@ -1,6 +1,6 @@
 <template>
-    <div class="tile" :style="background">
-        <img class="tile__icon" :src="icon" :alt="'Imagen de ' + name">
+    <div class="tile" :style="visible ? background(color) : background('#9670c9')">
+        <img v-show="visible" class="tile__icon" :src="icon" :alt="'Imagen de ' + name">
     </div>
 </template>
 
@@ -14,8 +14,8 @@ const props = defineProps({
   name: String
 })
 
-const background = computed(() => {
-    return 'background-color: ' + props.color + ';'
+const background = ((color) => {
+    return 'background-color: ' + color + ';'
 }) 
 </script>
 

@@ -5,16 +5,17 @@
   </header>
 
   <section class="panel">
-    <h2 v-show="gameState === 0" class="panel__memorise">Memorise the fruits!</h2>
+    <button v-show="gameState === 0" class="panel__start">Start Game!</button>
+    <h2 v-show="gameState === 1" class="panel__memorise">Memorise the fruits!</h2>
     <Tile
-      v-show="gameState === 1"
+      v-show="gameState === 2"
       class="panel__chosen"
       :icon="theChosenOne.icon"
       :color="theChosenOne.color"
       :name="theChosenOne.name"
       :visible="theChosenOne.visible"
     />
-    <h2 v-show="gameState === 2" v-text="resultMessage"></h2>
+    <h2 class="panel__result" v-show="gameState === 3" v-text="resultMessage"></h2>
   </section>
 
   <main class="tiles">
